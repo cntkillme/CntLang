@@ -9,6 +9,7 @@ namespace CntLang::Compiler
 	{
 	public:
 		explicit Lexer(std::istream& source) noexcept;
+
 		Token Next();
 	private:
 		std::istream& m_source;
@@ -22,7 +23,7 @@ namespace CntLang::Compiler
 
 		static bool IsDigit(char ch) noexcept;
 		static bool IsIdentifierBegin(char ch) noexcept;
-		static bool IsIdentifierPart(char ch)  noexcept;
+		static bool IsIdentifierPart(char ch) noexcept;
 		static bool IsWhitespace(char ch) noexcept;
 	};
 
