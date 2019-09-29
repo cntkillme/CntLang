@@ -1,0 +1,132 @@
+chunk = { global };
+
+global = variable_definition
+       | function_definition
+       ;
+
+variable_declaration = complete_type identifier ;
+
+variable_definition = variable_declaration [ "=" expression ] ;
+
+function_definition = type identifier "(" [ variable_declaration { "," variable_declaration } ] ")" { statement } "end" ;
+
+modifier = "mut"
+          | "ref"
+          ;
+
+type = "void"
+     | complete_type
+     ;
+
+complete_type = "bool"
+     | "int"
+     | "real"
+     | "string"
+     | type "(" [ complete_type { "," complete_type }] ")"
+     | modifier complete_type
+     ;
+
+statement = variable_definition ';'
+          | function_definition
+          | expression ';'
+          | id ":"
+          | "if" expression "then" { statement }
+               { "elseif" expression "then" { statement } }
+               [ "else" { statement } ] "end"
+          | "while" expression "do" { statement } "end"
+          | "return" [ expression ] ';'
+          | "break" [ id ] ';'
+          | "continue" [ id ] ';'
+          ;
+
+expression = assignment_expression;
+
+assignment_expression = logical_expression "=" assignment_expression
+                      | logical_expression "+=" assignment_expression
+                      | logical_expression "-=" assignment_expression
+                      | logical_expression "*=" assignment_expression
+                      | logical_expression "/=" assignment_expression
+                      | logical_expression "%=" assignment_expression
+                      | logical_expression "^=" assignment_expression
+                      | logical_expression
+                      ;
+
+logical_expression = logical_expression "&&" relational_expression
+                   | logical_expression "||" relational_expression
+                   | relational_expression
+                   ;
+
+relational_expression = relational_expression "==" additive_expression
+                      | relational_expression "!=" additive_expression
+                      | relational_expression "<=" additive_expression
+                      | relational_expression ">=" additive_expression
+                      | relational_expression "<" additive_expression
+                      | relational_expression ">" additive_expression
+                      | additive_expression
+                      ;
+
+additive_expression = additive_expression "+" multiplicative_expression
+                    | additive_expression "-" multiplicative_expression
+                    | multiplicative_expression
+                    ;
+
+multiplicative_expression = multiplicative_expression "*" prefix_expression
+                    | multiplicative_expression "/" prefix_expression
+                    | multiplicative_expression "%" prefix_expression
+                    | prefix_expression
+                    ;
+
+prefix_expression = "-" postfix_expression
+                 | "!" postfix_expression
+                 | postfix_expression
+                 ;
+
+postfix_expression = primary_expression "^" postfix_expression
+                   | primary_expression
+                   ;
+
+primary_expression = "(" expression ")"
+                   | bool_literal
+                   | int_literal
+                   | real_literal
+                   | string_literal
+                   | identifier
+                   | identifier "[" expression "]"
+                   | identifier "(" [ expression { "," expression } ] ")"
+                   ;
+
+bool_literal = "true"
+             | "false"
+             ;
+
+int_literal = digit { digit } ;
+
+real_literal = digit { digit } "." { digit }
+             | { digit } "." digit { digit }
+             ;
+
+string_literal = "\"" { character } "\"";
+
+character = plain_character
+          | escaped_character
+          ;
+
+plain_character = "\x20".."\x21"
+                | "\x23".."\x5B"
+                | "\x5D".."\x7D"
+                ;
+
+escaped_character = "\\" ( "\"" | "\\" | "n" | "t" ) ;
+
+digit = "0".."9" ;
+
+identifier = identifier_start { identifier_part } ;
+
+identifier_start = "_"
+                 | "A".."Z"
+                 | "a".."z"
+                 ;
+
+identifier_part = identifier_start
+                | digit
+                ;

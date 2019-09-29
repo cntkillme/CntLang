@@ -1,0 +1,64 @@
+// Single-line Comment
+/*
+	Multi-line Comment
+
+	Types:
+		bool
+		int
+		real
+		string
+		function
+
+	Modifiers:
+		mut
+		ref
+*/
+
+// Globals
+mut bool my_bool_global;
+mut int my_int_global;
+mut real my_real_global;
+ref int my_int_global_ref = my_int_global; // cannot alter, const by default
+
+real f(real x, real y)
+	return x + y;
+end
+
+real g(real x, real y)
+	return x * y;
+end
+
+// Main function
+void main()
+	mut int sum = 0;
+	mut int i = 0;
+
+	real(real, real) f1 = f; // ref is implied for function types
+	mut ref real(real, real) f2 = g; // mut is ignored here, functions are immutable
+
+	int const = 5;
+	ref mut int constref = const; // not allowed, const is not mut
+
+	sum = g(f(1, 2), 3);
+
+	outer:
+	while i < 10 do
+		mut int j = 0;
+
+		inner:
+		while j < 10 do
+			if (i * j) % 5 == 0 then
+				sum ^= 2; // exponentiation
+			elseif (i * j) % 7 == 0 then
+				break inner;
+			end
+
+			j += 1;
+		end
+
+		i += 1;
+	end
+
+	my_int_global_ref = 5; // not allowed, ref is not mut
+	my_int_global = 3; // okay
+end
