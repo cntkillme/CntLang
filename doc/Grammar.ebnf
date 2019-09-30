@@ -30,13 +30,12 @@ statement = variable_definition ';'
           | function_definition
           | expression ';'
           | id ":"
-          | "if" expression "then" { statement }
-               { "elseif" expression "then" { statement } }
-               [ "else" { statement } ] "end"
-          | "while" expression "do" { statement } "end"
+          | "if" "(" expression ")" statement [ "else" statement ]
+          | "while" "(" expression ")" statement
           | "return" [ expression ] ';'
           | "break" [ id ] ';'
           | "continue" [ id ] ';'
+          | "{" { statement } "}"
           ;
 
 expression = assignment_expression;

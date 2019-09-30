@@ -1,17 +1,35 @@
 #include <iostream>
-#include <fstream>
+#include "FileInfo.hpp"
 #include "Lexer.hpp"
-#include "Parser.hpp"
-#include "Reflection/Token.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
-	std::ifstream file("test/Example1.cnt");
-	CntLang::Compiler::Lexer lexer(file);
-	CntLang::Compiler::Parser parser(lexer);
+	if (argc < 2) {
+		std::cerr << "expected file\n";
+		return 1;
+	}
 
-	while (true) {
-		parser.Next();
+	try {
+		CntLang::Compiler::FileInfo file(argv[1]);
+		CntLang::Compiler::Token tkn;
+
+		while ((tkn = CntLang::Compiler::NextToken(file)).type != CntLang::Compiler::TokenType::EndOfFile) {
+			std::cout << file.name() << ':' << tkn.line << ':' << tkn.column << ':';
+			std::cout << " Token: " << CntLang::Compiler::TokenName(tkn.type);
+
+			if (CntLang::Compiler::HasLexeme(tkn.type))
+				std::cout << " (" << tkn.lexeme << ')';
+			std::cout << '\n';
+		}
+
+		std::cout << "Done!\n";
+	} catch (const CntLang::Compiler::LexerException& e) {
+		std::cerr << e.file() << ':' << e.line() << ':' << e.column() << ':';
+		std::cerr << " lex error: " << e.what() << '\n';
+		return 1;
+	} catch (const std::exception& e) {
+		std::cerr << "error " << e.what() << '\n';
+		return 1;
 	}
 
 	return 0;

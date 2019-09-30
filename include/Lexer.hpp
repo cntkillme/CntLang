@@ -1,41 +1,31 @@
 #pragma once
 
-#include <istream>
-#include "Token.hpp"
+#include <stdexcept>
+#include <string>
+#include "Compiler/Token.hpp"
+#include "FileInfo.hpp"
 
 namespace CntLang::Compiler
 {
-	class Lexer
+	class LexerException : public std::exception
 	{
 	public:
-		explicit Lexer(std::istream& source) noexcept;
+		LexerException(std::string error, const FileInfo& file);
+		LexerException(std::string error, std::string file, int line, int column);
 
-		Token Next();
-	private:
-		std::istream& m_source;
-		int m_line;
-		int m_col;
-		char m_char;
-
-		void SkipWhitespace();
-		char Scan();
-		void SkipLine();
-
-		static bool IsDigit(char ch) noexcept;
-		static bool IsIdentifierBegin(char ch) noexcept;
-		static bool IsIdentifierPart(char ch) noexcept;
-		static bool IsWhitespace(char ch) noexcept;
-	};
-
-	class LexerException : std::runtime_error
-	{
-	public:
-		LexerException(std::string message, int line, int col);
-
+		const char* what() const noexcept override;
+		const char* file() const noexcept;
 		int line() const noexcept;
-		int col() const noexcept;
+		int column() const noexcept;
+
 	private:
+		std::string m_error;
+		std::string m_file;
 		int m_line;
-		int m_col;
+		int m_column;
 	};
+
+	const char* TokenName(TokenType type) noexcept;
+	bool HasLexeme(TokenType type) noexcept;
+	Token NextToken(FileInfo& file);
 }

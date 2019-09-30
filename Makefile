@@ -1,7 +1,10 @@
-.PHONY: all clean
+.PHONY: debug release clean
 
-all:
-	g++ -std=c++17 -Wall -pedantic -Iinclude/ -O3 src/*.cpp -o cntlang
+debug:
+	g++ -std=c++17 -Wall -pedantic -Iinclude/ -g src/*.cpp -o CntLang.out
+
+release:
+	g++ -std=c++17 -Wall -pedantic -Iinclude/ -O3 src/*.cpp -o CntLang.out
 
 clean:
-	rm -f cntlang
+	rm -f CntLang.out

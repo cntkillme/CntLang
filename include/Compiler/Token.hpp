@@ -7,8 +7,9 @@ namespace CntLang::Compiler
 	enum class TokenType
 	{
 		EndOfFile,
-		Semicolon,
+		Comment,
 		Delimiter,
+		Semicolon,
 
 		LeftBrace, RightBrace,
 		LeftBracket, RightBracket,
@@ -30,7 +31,7 @@ namespace CntLang::Compiler
 		Void, Bool, Int, Real, String,
 
 		Mutable, Reference,
-		If, Then, ElseIf, Else, While, Do, End,
+		If, Else, While,
 		Return, Break, Continue,
 
 		True, False,
