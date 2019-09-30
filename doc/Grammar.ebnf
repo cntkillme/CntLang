@@ -77,6 +77,7 @@ multiplicative_expression = multiplicative_expression "*" prefix_expression
 
 prefix_expression = "-" postfix_expression
                  | "!" postfix_expression
+                 | "%" postfix_expression
                  | postfix_expression
                  ;
 
