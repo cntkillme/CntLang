@@ -1,5 +1,4 @@
 #!/usr/bin/cnt
-%tab-size 4
 
 // Single-line Comment
 
@@ -39,7 +38,7 @@ void main()
 {
 	mut int sum = 0;
 	mut int i = 0;
-	mut int curline = %line;
+	mut int curline = __intrinsic(line);
 
 	real(real, real) f1 = f; // ref is implied for function types
 	mut ref real(real, real) f2 = g; // mut is ignored here, functions are immutable

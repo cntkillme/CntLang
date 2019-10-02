@@ -4,26 +4,24 @@ global = variable_definition
        | function_definition
        ;
 
-variable_declaration = complete_type identifier ;
+variable_declaration = type identifier ;
 
-variable_definition = variable_declaration [ "=" expression ] ;
+variable_definition = variable_declaration [ "=" expression ] { "," identifier [ "=" expression ] } ;
 
-function_definition = type identifier "(" [ variable_declaration { "," variable_declaration } ] ")" { statement } "end" ;
+function_definition = type identifier "(" [ variable_declaration { "," variable_declaration } ] ")" "{" { statement } "}" ;
 
 modifier = "mut"
           | "ref"
           ;
 
 type = "void"
-     | complete_type
-     ;
-
-complete_type = "bool"
+     | "bool"
      | "int"
      | "real"
      | "string"
-     | type "(" [ complete_type { "," complete_type }] ")"
-     | modifier complete_type
+     | type "(" [ type { "," type }] ")"
+     | modifier type
+     | intrinsic_expression
      ;
 
 statement = variable_definition ';'
@@ -38,7 +36,7 @@ statement = variable_definition ';'
           | "{" { statement } "}"
           ;
 
-expression = assignment_expression;
+expression = assignment_expression ;
 
 assignment_expression = logical_expression "=" assignment_expression
                       | logical_expression "+=" assignment_expression
@@ -46,6 +44,11 @@ assignment_expression = logical_expression "=" assignment_expression
                       | logical_expression "*=" assignment_expression
                       | logical_expression "/=" assignment_expression
                       | logical_expression "%=" assignment_expression
+                      | logical_expression "<<=" assignment_expression
+                      | logical_expression ">>=" assignment_expression
+                      | logical_expression ">>>=" assignment_expression
+                      | logical_expression "&=" assignment_expression
+                      | logical_expression "|=" assignment_expression
                       | logical_expression "^=" assignment_expression
                       | logical_expression
                       ;
@@ -55,35 +58,48 @@ logical_expression = logical_expression "&&" relational_expression
                    | relational_expression
                    ;
 
-relational_expression = relational_expression "==" additive_expression
-                      | relational_expression "!=" additive_expression
-                      | relational_expression "<=" additive_expression
-                      | relational_expression ">=" additive_expression
-                      | relational_expression "<" additive_expression
-                      | relational_expression ">" additive_expression
-                      | additive_expression
+relational_expression = relational_expression "==" bitwise_expression
+                      | relational_expression "!=" bitwise_expression
+                      | relational_expression "<=" bitwise_expression
+                      | relational_expression ">=" bitwise_expression
+                      | relational_expression "<" bitwise_expression
+                      | relational_expression ">" bitwise_expression
+                      | bitwise_expression
                       ;
+
+bitwise_expression = bitwise_expression "<<" additive_expression
+                   | bitwise_expression ">>" additive_expression
+                   | bitwise_expression ">>>" additive_expression
+                   | bitwise_expression "&" additive_expression
+                   | bitwise_expression "|" additive_expression
+                   | bitwise_expression "^" additive_expression
+                   ;
 
 additive_expression = additive_expression "+" multiplicative_expression
                     | additive_expression "-" multiplicative_expression
                     | multiplicative_expression
                     ;
 
-multiplicative_expression = multiplicative_expression "*" prefix_expression
-                    | multiplicative_expression "/" prefix_expression
-                    | multiplicative_expression "%" prefix_expression
-                    | prefix_expression
+multiplicative_expression = multiplicative_expression "*" unary_expression
+                    | multiplicative_expression "/" unary_expression
+                    | multiplicative_expression "%" unary_expression
+                    | unary_expression
                     ;
 
-prefix_expression = "-" postfix_expression
-                 | "!" postfix_expression
-                 | "%" postfix_expression
-                 | postfix_expression
+unary_expression = "~" primary_expression
+                 |"-" primary_expression
+                 | "!" primary_expression
+                 | primary_expression "++"
+                 | primary_expression "--"
+                 | intrinsic_expression
+                 | primary_expression
                  ;
 
-postfix_expression = primary_expression "^" postfix_expression
-                   | primary_expression
-                   ;
+intrinsic_expression = "@decltype" primary_expression
+                     | "@dropref" complete_type
+                     | "@dropmut" complete_type
+                     | "@line"
+                     ;
 
 primary_expression = "(" expression ")"
                    | bool_literal
@@ -116,7 +132,7 @@ plain_character = "\x20".."\x21"
                 | "\x5D".."\x7D"
                 ;
 
-escaped_character = "\\" ( "\"" | "\\" | "n" | "t" ) ;
+escaped_character = "\\" ( "\"" | "\\" | "n" | "t" | "r" ) ;
 
 digit = "0".."9" ;
 
