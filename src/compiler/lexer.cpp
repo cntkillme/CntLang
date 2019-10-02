@@ -192,8 +192,8 @@ namespace cnt_lang::compiler
 		int line = src.line();
 		int col = src.col();
 
-		token tkn{consume(src, monostate_function<is_identifier_part>()), token_type::identifier,
-			line, col};
+		token tkn{ consume(src, monostate_function<is_identifier_part>()), token_type::identifier,
+			line, col };
 
 		if (tkn.lexeme.size() == 0) {
 			tkn.type = token_type::end_of_stream;
