@@ -1,0 +1,21 @@
+#pragma once
+
+#include <optional>
+#include <stdexcept>
+#include "source.hpp"
+#include "token.hpp"
+#include "node.hpp"
+
+namespace cnt_lang::compiler
+{
+	class parser_exception : public std::runtime_error
+	{
+	public:
+		parser_exception(const source& src, const std::string& error, const token& tkn);
+		parser_exception(const std::string& file, const std::string& error, int line, int col);
+
+		using std::runtime_error::what;
+	};
+
+	node next_node(source& src);
+}

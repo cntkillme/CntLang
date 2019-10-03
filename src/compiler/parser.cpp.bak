@@ -1,0 +1,81 @@
+#include "compiler/lexer.hpp"
+#include "compiler/parser.hpp"
+
+namespace cnt_lang::compiler
+{
+	parser_exception::parser_exception(const source& src, const std::string& error, const token& tkn)
+	: parser_exception(src.name(), error + " (near " + get_token_name(tkn.type) + ')', src.line(), src.col())
+	{
+	}
+
+	parser_exception::parser_exception(const std::string& file, const std::string& error, int line, int col)
+	: std::runtime_error(file + ':' + std::to_string(line) + ':' + std::to_string(col) + ": " + error)
+	{
+	}
+
+	void next(source& src, token& current, token& lookhead)
+	{
+		current = std::move(lookhead);
+		lookhead = next_token(src);
+	}
+
+	void expect(token_type type, source& src, token& current, token& lookhead)
+	{
+		next(src, current, lookhead);
+
+		if (current.type != type)
+			throw parser_exception(src, std::string("expected: ") + get_token_name(type), current);
+	}
+
+	node parse_variable_declaration(source& src, token& current, token& lookahead);
+
+	node parse_global(source& src, token& current, token& lookahead)
+	{
+		node global;
+		node decl = parse_variable_declaration(src, current, lookahead);
+
+		if (current.type == token_type::parenthesis_left) { // func def
+			global.type = node_type::function_definition;
+			global.children.emplace_back(std::move(decl)); // return type
+
+			next(src, current, lookahead);
+
+			// parameters
+			while (current.type != token_type::parenthesis_right) {
+				node param = parse_variable_declaration(src, current, lookahead);
+
+				if (param.data.type == token_type::type_void)
+					throw parser_exception("void cannot be a ")
+			}
+
+			next(src, current, lookahead);
+		} else { // variable def?
+
+		}
+
+		return decl;
+	}
+
+	node parse_chunk(source& src, token& current, token& lookahead)
+	{
+		node chunk;
+		node global;
+		chunk.type = node_type::chunk;
+
+		while ((global = parse_global(src, current, lookahead)).type != node_type::end_of_stream)
+			chunk.children.emplace_back(std::move(global));
+
+		return chunk;
+	}
+
+	node next_node(source& src)
+	{
+		token current = next_token(src);
+		token lookahead = next_token(src);
+
+		node chunk = parse_chunk(src, current, lookahead);
+
+		expect(token_type::end_of_stream, src, current, lookahead);
+		return chunk;
+	}
+}

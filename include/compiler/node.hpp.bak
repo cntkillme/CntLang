@@ -1,0 +1,23 @@
+#pragma once
+
+#include <vector>
+#include "token.hpp"
+
+namespace cnt_lang::compiler
+{
+	enum class node_type : int;
+
+	struct node
+	{
+		token data;
+		node_type type;
+		std::vector<node> children;
+	};
+
+	enum class node_type
+	{
+		end_of_stream, chunk, global,
+		type, variable_declaration, variable_definition, function_definition,
+		intrinsic
+	};
+}

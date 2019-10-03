@@ -1,14 +1,17 @@
+#include <array>
 #include <unordered_map>
 #include "monostate_function.hpp"
 #include "compiler/lexer.hpp"
 
 namespace cnt_lang::compiler
 {
-	lexer_exception::lexer_exception(const source& src, const std::string& error, std::optional<int> line,
-		std::optional<int> col)
-	: std::runtime_error(src.name() + ':' +
-		std::to_string(line.value_or(src.line())) + ':' +
-		std::to_string(col.value_or(src.col())) + ": error: " + error)
+	lexer_exception::lexer_exception(const source& src, const std::string& error)
+	: lexer_exception(src.name(), error, src.line(), src.col())
+	{
+	}
+
+	lexer_exception::lexer_exception(const std::string& file, const std::string& error, int line, int col)
+	: std::runtime_error(file + ':' + std::to_string(line) + ':' + std::to_string(col) + ": " + error)
 	{
 	}
 
@@ -93,7 +96,7 @@ namespace cnt_lang::compiler
 		if (tkn.type == token_type::literal_int && tkn.lexeme.size() == 0)
 			tkn.type = token_type::end_of_stream;
 		else if (tkn.type == token_type::literal_real && tkn.lexeme.size() < 2)
-			throw lexer_exception(src, "malformed real literal", tkn.line, tkn.col);
+			throw lexer_exception(src.name(), "malformed real literal", tkn.line, tkn.col);
 
 		return tkn;
 	}
@@ -159,9 +162,9 @@ namespace cnt_lang::compiler
 
 			if (auto it = intrinsic_map.find(consume(src, monostate_function<is_identifier_part>()));
 				it != intrinsic_map.end()) {
-				return { it->first, it->second, line, col };
+				return { "", it->second, line, col };
 			} else {
-				throw lexer_exception(src, "unknown intrinsic", line, col + 1);
+				throw lexer_exception(src.name(), "unknown intrinsic", line, col + 1);
 			}
 		} else {
 			return { };
@@ -189,11 +192,8 @@ namespace cnt_lang::compiler
 			{ "false", token_type::literal_false }
 		});
 
-		int line = src.line();
-		int col = src.col();
-
-		token tkn{ consume(src, monostate_function<is_identifier_part>()), token_type::identifier,
-			line, col };
+		token tkn{ "", token_type::identifier, src.line(), src.col() };
+		tkn.lexeme = consume(src, monostate_function<is_identifier_part>());
 
 		if (tkn.lexeme.size() == 0) {
 			tkn.type = token_type::end_of_stream;
@@ -286,7 +286,7 @@ namespace cnt_lang::compiler
 
 				return { "<comment>", token_type::comment, line, col };
 			} else {
-				return { last->first, last->second, line, col };
+				return { "", last->second, line, col };
 			}
 		} else {
 			return { };
@@ -314,7 +314,33 @@ namespace cnt_lang::compiler
 			else
 				throw lexer_exception(src, "unexpected symbol");
 		} else {
-			return { "<eof>", token_type::end_of_stream, src.line(), src.col() };
+			return { "", token_type::end_of_stream, src.line(), src.col() };
 		}
+	}
+
+	const std::string& get_token_name(token_type type)
+	{
+		static const std::array<std::string, static_cast<int>(token_type::literal_string) + 1> token_names({
+			"<eos>", "<comment>", ",", ";",
+			"{", "}", "[", "]", "(", ")",
+			"+", "-", "*", "/", "%",
+			"<<", ">>", ">>>",
+			"~", "&", "|", "^",
+			"!", "&&", "||",
+			"=",
+			"+=", "-=", "*=", "/=", "%=",
+			"<<=", ">>=", ">>>=",
+			"&=", "|=", "^=",
+			"++", "--",
+			"==", "!=", "<", "<=", ">", ">=",
+			"void", "bool", "int", "real", "string",
+			"mut", "ref",
+			"@decltype", "@dropref", "@dropmut", "@line",
+			"if", "else", "return", "break", "continue",
+			"true", "false",
+			"<identifier>", "<label>", "<int literal>", "<real literal>", "<string literal>"
+		});
+
+		return token_names.at(static_cast<int>(type));
 	}
 }

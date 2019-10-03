@@ -6,9 +6,9 @@ global = variable_definition
 
 variable_declaration = type identifier ;
 
-variable_definition = variable_declaration [ "=" expression ] { "," identifier [ "=" expression ] } ;
+variable_definition = variable_declaration [ "=" expression ] { "," identifier [ "=" expression ] } ";" ;
 
-function_definition = type identifier "(" [ variable_declaration { "," variable_declaration } ] ")" "{" { statement } "}" ;
+function_definition = variable_declaration "(" [ variable_declaration { "," variable_declaration } ] ")" "{" { statement } "}" ;
 
 modifier = "mut"
           | "ref"
@@ -24,7 +24,7 @@ type = "void"
      | intrinsic_expression
      ;
 
-statement = variable_definition ';'
+statement = variable_definition
           | function_definition
           | expression ';'
           | id ":"
