@@ -1,0 +1,30 @@
+#!/usr/bin/cntlang
+# comment testing
+             # comment
+true        # comment
+false      #comment
+true false
+truefalse
+,:)(&
++-*/% =
++=-=*=/=%=
+==!=<<=>>=
+1
+1.
+1.5
+1e4 1.e4 1.0e4
+1e+4 1.e+4 1.0e+4
+1e-4 1.e-4 1.0e-4
+
+type line column dropmut dropref
+type! line! column! dropmut! dropref!
+none bool int real mut &
+fn return end if elseif else then while for do break continue
+not and or
+a b c
+#
+# [\\+\\-\\*\\/\\%]=?|=|==|!=|<|<=|>|>=
+a d bin
+a_feaf
+earar
+_rearar3441 = 5

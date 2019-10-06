@@ -1,0 +1,79 @@
+(* Tokens *)
+end_of_stream = EPSILON;
+whitespace = " " | "\n" | "\t";
+comment = "#" (CHARACTER - "\n") ("\n" | EPSILON);
+
+identifier = IDENTIFIER_BEGIN { IDENTIFIER_PART };
+
+literal_true = "true";
+literal_false = "false";
+
+literal_int = DIGIT { DIGIT };
+literal_real = literal_int [ "." [ literal_int ] ] [ ( "e" | "E" ) [ "+" | "-" ] literal_int ];
+
+delimiter = ",";
+colon = ":";
+
+parenthesis_left = "(";
+parenthesis_right = ")";
+
+intrinsic_type = "type!";
+intrinsic_line = "line!";
+intrinsic_column = "column!";
+intrinsic_dropmut = "dropmut!";
+intrinsic_dropref = "dropref!";
+
+type_none = "none";
+type_bool = "bool";
+type_int = "int";
+type_real = "real";
+modifier_mut = "mut";
+modifier_ref = "&";
+
+keyword_let = "let";
+
+keyword_fn = "fn";
+keyword_return = "return";
+keyword_end = "end";
+
+keyword_if = "if";
+keyword_elseif = "elseif";
+keyword_else = "else";
+keyword_then = "then";
+
+keyword_while = "while";
+keyword_for = "for";
+keyword_do = "do";
+keyword_break = "break";
+keyword_continue = "continue";
+
+add = "+";
+subtract = "-";
+multiply = "*";
+divide = "/";
+remainder = "%";
+
+assign = "=";
+assign_add = "+=";
+assign_subtract = "-=";
+assign_multiply = "*=";
+assign_divide = "/=";
+assign_remainder = "%=";
+
+equal = "==";
+not_equal = "!=";
+less = "<";
+less_or_equal = "<=";
+greater = ">";
+greater_or_equal = ">=";
+
+logical_not = "not";
+logical_and = "and";
+logical_or = "or";
+
+(* Intermediate *)
+EPSILON = "\xFF";
+CHARACTER = "\x20..\x7E";
+DIGIT = "\x30..\x39";
+IDENTIFIER_BEGIN = "\x41..\x5A" | "\x61..\x7A" | "_";
+IDENTIFIER_PART = IDENTIFIER_BEGIN | DIGIT;
