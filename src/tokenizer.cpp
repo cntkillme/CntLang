@@ -4,6 +4,16 @@
 
 namespace cntlang
 {
+	lexical_error::lexical_error(kind error, int line, int column) noexcept
+	: m_kind(error)
+	, m_line(line)
+	, m_column(column)
+	{
+	}
+}
+
+namespace cntlang
+{
 	token handle_comment(stream_info& stream);
 	token handle_numeric(stream_info& stream);
 	token handle_keyword(stream_info& stream);
@@ -25,7 +35,7 @@ namespace cntlang
 		char chr = skip_whitespace(stream);
 
 		if (is_epsilon(chr))
-			return token{"<end-of-stream>", token_kind::end_of_stream, stream.line(), stream.column()};
+			return token{"<end-of-stream>", token::kind::end_of_stream, stream.line(), stream.column()};
 		else if (chr == '#')
 			return handle_comment(stream);
 		else if (is_digit(chr))
@@ -36,7 +46,7 @@ namespace cntlang
 			return handle_operator(stream);
 	}
 
-	token handle_comment(stream_info& stream)
+	token handle_comment(stream_info& stream) // peek = '#'
 	{
 		std::string content;
 		int line = stream.line();
@@ -47,150 +57,144 @@ namespace cntlang
 
 		stream.get();
 
-		return {std::move(content), token_kind::comment, line, column};
+		return {std::move(content), token::kind::comment, line, column};
 	}
 
-	token handle_numeric(stream_info& stream)
+	token handle_numeric(stream_info& stream) // is_digit(peek)
 	{
 		std::string content;
-		token_kind kind;
+		typename token::kind tokenKind;
 		int line = stream.line();
 		int column = stream.column();
 
 		content = read_integer(stream);
 
-		if (content.size() == 0)
-			throw 0; // to-do: tokenizer_error expected numeric real
-
 		if (stream.peek() == '.') {
-			kind = token_kind::literal_real;
+			tokenKind = token::kind::literal_real;
 			content += stream.get();
 			content += read_integer(stream);
 		} else {
-			kind = token_kind::literal_int;
+			tokenKind = token::kind::literal_int;
 		}
 
 		if (stream.peek() == 'e' || stream.peek() == 'E') {
-			kind = token_kind::literal_real;
+			tokenKind = token::kind::literal_real;
 			content += stream.get();
 
 			if (stream.peek() == '+' || stream.peek() == '-')
 				content += stream.get();
 
-			std::string exponent = read_integer(stream);
-			content += exponent;
-
-			if (exponent.size() == 0)
-				throw 0; // to-do: tokenizer_error malformed real literal, no exponent
+			if (std::string exponent = read_integer(stream); exponent.size() > 0)
+				content += exponent;
+			else
+				throw lexical_error(lexical_error::kind::expected_exponent, stream.line(), stream.column());
 		}
 
-		return {std::move(content), kind, line, column};
+		return {std::move(content), tokenKind, line, column};
 	}
 
-	token handle_keyword(stream_info& stream)
+	token handle_keyword(stream_info& stream) // is_identifier_part(peek)
 	{
-		static const std::unordered_map<std::string, token_kind> keyword_map({
-			{ "true", token_kind::literal_true },
-			{ "false", token_kind::literal_false },
-			{ "none", token_kind::type_none },
-			{ "bool", token_kind::type_bool },
-			{ "int", token_kind::type_int },
-			{ "real", token_kind::type_real },
-			{ "mut", token_kind::modifier_mut },
-			{ "let", token_kind::keyword_let },
-			{ "fn", token_kind::keyword_fn },
-			{ "return", token_kind::keyword_return },
-			{ "end", token_kind::keyword_end },
-			{ "if", token_kind::keyword_if },
-			{ "elseif", token_kind::keyword_elseif },
-			{ "else", token_kind::keyword_else },
-			{ "then", token_kind::keyword_then },
-			{ "while", token_kind::keyword_while },
-			{ "for", token_kind::keyword_for },
-			{ "do", token_kind::keyword_do },
-			{ "break", token_kind::keyword_break },
-			{ "continue", token_kind::keyword_continue },
-			{ "not", token_kind::logical_not },
-			{ "and", token_kind::logical_and },
-			{ "or", token_kind::logical_or }
+		static const std::unordered_map<std::string, typename token::kind> keyword_map({
+			{ "true", token::kind::literal_true },
+			{ "false", token::kind::literal_false },
+			{ "none", token::kind::type_none },
+			{ "bool", token::kind::type_bool },
+			{ "int", token::kind::type_int },
+			{ "real", token::kind::type_real },
+			{ "mut", token::kind::modifier_mut },
+			{ "let", token::kind::keyword_let },
+			{ "fn", token::kind::keyword_fn },
+			{ "return", token::kind::keyword_return },
+			{ "end", token::kind::keyword_end },
+			{ "if", token::kind::keyword_if },
+			{ "elseif", token::kind::keyword_elseif },
+			{ "else", token::kind::keyword_else },
+			{ "then", token::kind::keyword_then },
+			{ "while", token::kind::keyword_while },
+			{ "for", token::kind::keyword_for },
+			{ "do", token::kind::keyword_do },
+			{ "break", token::kind::keyword_break },
+			{ "continue", token::kind::keyword_continue },
+			{ "not", token::kind::logical_not },
+			{ "and", token::kind::logical_and },
+			{ "or", token::kind::logical_or },
+			{ "type!", token::kind::intrinsic_type },
+			{ "line!", token::kind::intrinsic_line },
+			{ "column!", token::kind::intrinsic_column },
+			{ "dropmut!", token::kind::intrinsic_dropmut },
+			{ "dropref!", token::kind::intrinsic_dropref }
 		});
 
-		static const std::unordered_map<std::string, token_kind> intrinsic_map({
-			{ "type!", token_kind::intrinsic_type },
-			{ "line!", token_kind::intrinsic_line },
-			{ "column!", token_kind::intrinsic_column },
-			{ "dropmut!", token_kind::intrinsic_dropmut },
-			{ "dropref!", token_kind::intrinsic_dropref }
-		});
-
-		int line = stream.line;
-		int column = stream.column;
+		std::string content;
+		typename token::kind tokenKind;
+		int line = stream.line();
+		int column = stream.column();
 
 		while (is_identifier_part(stream.peek()))
-			stream.data += stream.get();
+			content += stream.get();
 
-		if (stream.data.size() == 0)
-			stream.error("expected identifier", line, column);
+		if (stream.peek() == '!') // intrinsic
+			content += stream.get();
 
-		if (stream.peek() == '!') {
-			stream.data += stream.get();
+		if (auto it = keyword_map.find(content); it != keyword_map.end())
+			tokenKind = it->second;
+		else if (content.back() != '!')
+			tokenKind = token::kind::identifier;
+		else
+			throw lexical_error(lexical_error::kind::unknown_intrinsic, line, column);
 
-			if (auto it = intrinsic_map.find(stream.data); it != intrinsic_map.end())
-				return it->second;
-			else
-				stream.error("unknown intrinsic", line, column);
-		} else {
-			if (auto it = keyword_map.find(stream.data); it != keyword_map.end())
-				return it->second;
-			else
-				return token_kind::identifier;
-		}
+		return {std::move(content), tokenKind, line, column};
 	}
 
 	token handle_operator(stream_info& stream)
 	{
-		static const std::unordered_map<std::string, token_kind> operator_map({
-			{ ",", token_kind::delimiter },
-			{ ":", token_kind::colon },
-			{ "(", token_kind::parenthesis_left },
-			{ ")", token_kind::parenthesis_right },
-			{ "&", token_kind::modifier_ref },
-			{ "+", token_kind::add },
-			{ "-", token_kind::subtract },
-			{ "*", token_kind::multiply },
-			{ "/", token_kind::divide },
-			{ "%", token_kind::remainder },
-			{ "=", token_kind::assign },
-			{ "+=", token_kind::assign_add },
-			{ "-=", token_kind::assign_subtract },
-			{ "*=", token_kind::assign_multiply },
-			{ "/=", token_kind::assign_divide },
-			{ "%=", token_kind::assign_remainder },
-			{ "==", token_kind::equal },
-			{ "!=", token_kind::not_equal },
-			{ "<", token_kind::less },
-			{ "<=", token_kind::less_or_equal },
-			{ ">", token_kind::greater },
-			{ ">=", token_kind::greater_or_equal }
+		static const std::unordered_map<std::string, typename token::kind> operator_map({
+			{ ",", token::kind::delimiter },
+			{ ":", token::kind::colon },
+			{ "(", token::kind::parenthesis_left },
+			{ ")", token::kind::parenthesis_right },
+			{ "&", token::kind::modifier_ref },
+			{ "+", token::kind::add },
+			{ "-", token::kind::subtract },
+			{ "*", token::kind::multiply },
+			{ "/", token::kind::divide },
+			{ "%", token::kind::remainder },
+			{ "=", token::kind::assign },
+			{ "+=", token::kind::assign_add },
+			{ "-=", token::kind::assign_subtract },
+			{ "*=", token::kind::assign_multiply },
+			{ "/=", token::kind::assign_divide },
+			{ "%=", token::kind::assign_remainder },
+			{ "==", token::kind::equal },
+			{ "!=", token::kind::not_equal },
+			{ "<", token::kind::less },
+			{ "<=", token::kind::less_or_equal },
+			{ ">", token::kind::greater },
+			{ ">=", token::kind::greater_or_equal }
 		});
 
+		std::string content;
+		typename token::kind tokenKind;
 		int line = stream.line;
 		int column = stream.column;
-		stream.data += std::string(1, stream.get());
-		stream.data += stream.peek();
 
-		if (auto it = operator_map.find(stream.data); it != operator_map.end()) {
+		content += stream.get();
+		content += stream.peek();
+
+		if (auto it = operator_map.find(content); it != operator_map.end()) {
 			stream.get();
-			return it->second;
+			tokenKind = it->second;
+		} else {
+			content.pop_back();
+
+			if (auto it = operator_map.find(content); it != operator_map.end())
+				tokenKind = it->second;
+			else
+				throw lexical_error(lexical_error::kind::unexpected_symbol, line, column);
 		}
 
-		stream.data.pop_back();
-
-		if (auto it = operator_map.find(stream.data); it != operator_map.end()) {
-			return it->second;
-		}
-
-		stream.error("unexpected symbol", line, column);
+		return {std::move(content), tokenKind, line, column};
 	}
 
 	char skip_whitespace(stream_info& stream)
