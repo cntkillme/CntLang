@@ -28,7 +28,7 @@ namespace cntlang
 		};
 
 		std::string lexeme;
-		kind kind;
+		kind type;
 		int line;
 		int column;
 	};

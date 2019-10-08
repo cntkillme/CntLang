@@ -5,10 +5,26 @@
 namespace cntlang
 {
 	lexical_error::lexical_error(kind error, int line, int column) noexcept
-	: m_kind(error)
+	: m_error(error)
 	, m_line(line)
 	, m_column(column)
 	{
+	}
+
+
+	lexical_error::kind lexical_error::error() const noexcept
+	{
+		return m_error;
+	}
+
+	int lexical_error::line() const noexcept
+	{
+		return m_line;
+	}
+
+	int lexical_error::column() const noexcept
+	{
+		return m_column;
 	}
 }
 
@@ -57,7 +73,7 @@ namespace cntlang
 
 		stream.get();
 
-		return {std::move(content), token::kind::comment, line, column};
+		return { std::move(content), token::kind::comment, line, column };
 	}
 
 	token handle_numeric(stream_info& stream) // is_digit(peek)
@@ -90,7 +106,7 @@ namespace cntlang
 				throw lexical_error(lexical_error::kind::expected_exponent, stream.line(), stream.column());
 		}
 
-		return {std::move(content), tokenKind, line, column};
+		return { std::move(content), tokenKind, line, column };
 	}
 
 	token handle_keyword(stream_info& stream) // is_identifier_part(peek)
@@ -144,7 +160,7 @@ namespace cntlang
 		else
 			throw lexical_error(lexical_error::kind::unknown_intrinsic, line, column);
 
-		return {std::move(content), tokenKind, line, column};
+		return { std::move(content), tokenKind, line, column };
 	}
 
 	token handle_operator(stream_info& stream)
@@ -176,8 +192,8 @@ namespace cntlang
 
 		std::string content;
 		typename token::kind tokenKind;
-		int line = stream.line;
-		int column = stream.column;
+		int line = stream.line();
+		int column = stream.column();
 
 		content += stream.get();
 		content += stream.peek();
@@ -194,7 +210,7 @@ namespace cntlang
 				throw lexical_error(lexical_error::kind::unexpected_symbol, line, column);
 		}
 
-		return {std::move(content), tokenKind, line, column};
+		return { std::move(content), tokenKind, line, column };
 	}
 
 	char skip_whitespace(stream_info& stream)

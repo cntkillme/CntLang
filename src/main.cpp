@@ -12,9 +12,10 @@ int main(int argc, char** argv)
 	std::ifstream file(argv[1]);
 	cntlang::stream_info stream(file, argv[1]);
 
-	for (cntlang::token_kind kind = cntlang::next_token(stream);
-	kind != cntlang::token_kind::end_of_stream; kind = cntlang::next_token(stream)) {
-		std::cout << "Read token: " << static_cast<int>(kind) << " (" << stream.data << ")\n";
+	for (auto tkn = cntlang::next_token(stream);
+			tkn.type != cntlang::token::kind::end_of_stream;
+			tkn = cntlang::next_token(stream)) {
+//		std::cout << stream.source() << ':' << tkn << '\n';
 	}
 
 	return 0;

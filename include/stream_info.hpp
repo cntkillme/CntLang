@@ -24,8 +24,8 @@ namespace cntlang
 
 	private:
 		std::istream& m_stream;
-		std::vector<char> m_buffer;
 		std::string m_source;
+		std::vector<char> m_buffer;
 		int m_line = 1;
 		int m_column = 1;
 	};

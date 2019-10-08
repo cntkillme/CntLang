@@ -8,7 +8,7 @@ let my_int_ref: &int = my_int
 let my_real_ref: &real = my_real
 
 # Intrinsics (type!, dropmut!, dropref!, line!, column!)
-let my_real_ref_mut: mut type!(my_real_ref) = my_real_ref
+let my_real_ref_mut: mut type! my_real_ref = my_real_ref
 
 fn f(x: real, y: real): real
 	return x + y

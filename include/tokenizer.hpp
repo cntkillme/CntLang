@@ -16,10 +16,13 @@ namespace cntlang
 			unexpected_symbol
 		};
 
-		explicit lexical_error(kind error, int line, int column);
+		explicit lexical_error(kind error, int line, int column) noexcept;
+		kind error() const noexcept;
+		int line() const noexcept;
+		int column() const noexcept;
 
 	private:
-		kind m_kind;
+		kind m_error;
 		int m_line;
 		int m_column;
 	};
