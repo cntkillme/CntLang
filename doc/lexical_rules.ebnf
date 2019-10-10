@@ -13,6 +13,7 @@ literal_real = literal_int [ "." [ literal_int ] ] [ ( "e" | "E" ) [ "+" | "-" ]
 
 delimiter = ",";
 colon = ":";
+semicolon = ";";
 
 parenthesis_left = "(";
 parenthesis_right = ")";

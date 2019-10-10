@@ -12,7 +12,7 @@ namespace cntlang
 			identifier,
 			literal_true, literal_false,
 			literal_int, literal_real,
-			delimiter, colon,
+			delimiter, colon, semicolon,
 			parenthesis_left, parenthesis_right,
 			intrinsic_type, intrinsic_line, intrinsic_column, intrinsic_dropmut, intrinsic_dropref,
 			type_none, type_bool, type_int, type_real,

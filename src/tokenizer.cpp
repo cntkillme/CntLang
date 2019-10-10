@@ -168,6 +168,7 @@ namespace cntlang
 		static const std::unordered_map<std::string, typename token::kind> operator_map({
 			{ ",", token::kind::delimiter },
 			{ ":", token::kind::colon },
+			{ ";", token::kind::semicolon },
 			{ "(", token::kind::parenthesis_left },
 			{ ")", token::kind::parenthesis_right },
 			{ "&", token::kind::modifier_ref },

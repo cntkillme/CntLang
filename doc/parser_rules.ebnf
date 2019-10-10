@@ -1,14 +1,14 @@
 (* AST Nodes *)
 program = { variable_definition | function_definition } end_of_stream;
 
-variable_definition = keyword_let DECLARATION [ assign expression ];
+variable_definition = keyword_let DECLARATION [ assign expression ] semicolon;
 function_definition = keyword_fn identifier
-    parenthesis_left [ DECLARATION_LIST ] parenthesis_right colon TYPE [ STATEMENT_LIST ] keyword_end;
+    parenthesis_left [ DECLARATION_LIST ] parenthesis_right colon type [ STATEMENT_LIST ] keyword_end;
 
 statement = variable_definition | return_stmt | if_statement | while_statement | for_statement |
     break_stmt | continue_stmt | expression;
 
-return_stmt = keyword_return expression;
+return_stmt = keyword_return expression semicolon;
 if_statement = keyword_if expression keyword_then [ STATEMENT_LIST ]
     { elseif_statement } [ else_statement ] keyword_end;
 elseif_statement = keyword_elseif expression keyword_then [ STATEMENT_LIST ];
@@ -16,10 +16,10 @@ else_statement = keyword_else [ STATEMENT_LIST ];
 
 while_statement = keyword_while expression keyword_do [ STATEMENT_LIST ] keyword_end;
 for_statement = keyword_for variable_definition delimiter expression [ delimiter expression ];
-break_stmt = keyword_break;
-continue_stmt = keyword_continue;
+break_stmt = keyword_break semicolon;
+continue_stmt = keyword_continue semicolon;
 
-expression = assignment_expression;
+expression = assignment_expression semicolon;
 assignment_expression = logical_expression { ASSIGNMENT_OPERATOR logical_expression };
 
 logical_expression = { relational_expression BINARY_LOGICAL_OPERATOR } relational_expression;
@@ -28,7 +28,7 @@ relational_expression = { additive_expression RELATIONAL_OPERATOR } additive_exp
 additive_expression = { multiplicative_expression ADDITIVE_OPERATOR } multiplicative_expression;
 multiplicative_expression = { unary_expression MULTIPLICATIVE_OPERATOR } unary_expression;
 
-unary_expression = [ UNARY_OPERATOR ] (primary_expression | intrinsic_expression);
+unary_expression = [ UNARY_OPERATOR ] ( primary_expression | intrinsic_line | intrinsic_column );
 
 primary_expression = parenthesis_left expression parenthesis_right
                    | LITERAL_BOOL
@@ -39,19 +39,17 @@ primary_expression = parenthesis_left expression parenthesis_right
 
 call_expression = identifier parenthesis_left [ EXPRESSION_LIST ] parenthesis_right;
 
-intrinsic_expression = intrinsic_type expression
-                     | intrinsic_line
-                     | intrinsic_column
-                     | intrinsic_dropmut TYPE
-                     | intrinsic_dropref TYPE
-                     ;
+type = type_none | type_complete;
+type_complete = { modifier } type_primitive | type_function | type_intrinsic;
+type_primitive = type_bool | type_int | type_real;
+type_function = type parenthesis_left [ TYPE_COMPLETE_LIST ] parenthesis_right;
+type_intrinsic = intrinsic_dropmut complete_type | intrinsic_dropref complete_type | intrinsic_type expression;
+
+modifier = modifier_mut | modifier_ref;
+
 (* Intermediate *)
-TYPE = { MODIFIER } TYPENAME;
-MODIFIER = modifier_mut | modifier_ref;
-TYPENAME = type_none | type_bool | type_int | type_real | FUNCTION_TYPE | intrinsic_expression;
-FUNCTION_TYPE = TYPE parenthesis_left [ TYPE_LIST ] parenthesis_right;
-TYPE_LIST = TYPE { delimiter TYPE };
-DECLARATION = identifier colon TYPE;
+TYPE_COMPLETE_LIST = type_complete { delimiter type_complete };
+DECLARATION = identifier colon type_complete;
 DECLARATION_LIST = DECLARATION { delimiter DECLARATION};
 STATEMENT_LIST = statement { statement };
 ASSIGNMENT_OPERATOR = assign | assign_add | assign_subtract | assign_multiply | assign_divide | assign_remainder;
