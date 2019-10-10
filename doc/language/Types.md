@@ -64,8 +64,7 @@ The **base type** of a type is the resultant type after modifiers are stripped. 
 1. The base type of the [none type](#None%20Type) is `type` (syntactically implied).
 2. The base type of a [mutable type](#Mutable%20Type) is the base type of `dropmut! type`.
 3. The base type of a [reference type](#Reference%20Type) is the base type of `dropref! type`.
-4. The base type of a [function type](#Function%20Type) is the same function type (syntactically implied).
-5. The base type of an unqualified non-function type is `type`.
+4. The base type of any unqualified complete type is `type`.
 
 Therefore, the base type of any given `type` is equivilent to `dropmut! dropref! type` such that `type` is not the [none type](#None%20Type).
 
